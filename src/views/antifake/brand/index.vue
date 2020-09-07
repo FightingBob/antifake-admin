@@ -37,7 +37,7 @@
 
     <div class="table-container">
       <el-table
-        ref="adminTable"
+        ref="brandTable"
         v-loading="listLoading"
         :data="list"
         style="width: 100%;"
@@ -98,10 +98,42 @@
         @current-change="handleCurrentChange"
       />
     </div>
+
+    <el-dialog
+      :title="isEdit?'编辑品牌':'添加品牌'"
+      :visible.sync="dialogVisible"
+      width="40%"
+    >
+      <el-form
+        ref="brandForm"
+        :model="fwBrand"
+        label-width="150px"
+        size="small"
+        :rules="rules"
+      >
+        <el-form-item label="品牌名称：" prop="name">
+          <el-input v-model="fwBrand.name" style="width: 250px" />
+        </el-form-item>
+        <el-form-item label="防伪码前缀：" prop="preNumber">
+          <el-input v-model.number="fwBrand.preNumber" style="width: 250px" />
+        </el-form-item>
+        <el-form-item label="是否启用：">
+          <el-radio-group v-model="fwBrand.enabled">
+            <el-radio :label="true">是</el-radio>
+            <el-radio :label="false">否</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="small" @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" size="small" @click="handleDialogConfirm('brandForm')">确 定</el-button>
+      </span>
+    </el-dialog>
+
   </div>
 </template>
 <script>
-import { fetchList } from '@/api/fwBrand'
+import { fetchList, createFwBrand, deleteFwBrand } from '@/api/fwBrand'
 const defaultListQuery = {
   pageNum: 1,
   pageSize: 10,
@@ -131,7 +163,15 @@ export default {
       total: null,
       dialogVisible: false,
       isEdit: false,
-      fwBrand: Object.assign({}, defaultFwBrand)
+      fwBrand: Object.assign({}, defaultFwBrand),
+      rules: {
+        name: [
+          { min: 2, max: 15, message: '长度在2到15个字符之间', trigger: 'blur' }
+        ],
+        preNumber: [
+          { type: 'number', min: 1, max: 9, message: '请在1-9内进行选择', trigger: ['blur', 'change'] }
+        ]
+      }
     }
   },
   created() {
@@ -166,17 +206,74 @@ export default {
     handleAdd() {
       this.dialogVisible = true
       this.isEdit = false
-      this.admin = Object.assign({}, defaultFwBrand)
+      this.fwBrand = Object.assign({}, defaultFwBrand)
     },
     handleBatch(index, row) {
       this.$router.push({
         path: '/antifake/batch',
         name: 'batch',
         query: {
-          brandId: row.id
+          brandId: row.id,
+          brandName: row.name,
+          preNumber: row.preNumber
         }
       })
+    },
+    handleDialogConfirm(formName) {
+      this.$confirm('是否要确认?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        if (this.isEdit) {
+          console.log('编辑品牌')
+        } else {
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              this.addFwBrand(this.fwBrand)
+            } else {
+              this.$message.error('请填写正确再提交')
+            }
+          })
+        }
+      })
+    },
+    addFwBrand(fwBrand) {
+      // fwBrand.preNumber += ''
+      createFwBrand(fwBrand).then(response => {
+        const message = '添加成功'
+        const type = 'success'
+        this.tips(message, type)
+        this.dialogVisible = false
+        this.getList()
+      })
+    },
+    handleDelete(index, row) {
+      this.$confirm('是否要删除该批次，也会删除旗下的所有防伪码?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        const params = {
+          fwBrandId: row.id
+        }
+        deleteFwBrand(params).then(response => {
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          })
+          this.getList()
+        })
+      })
+    },
+    tips(message, type) {
+      this.$message({
+        message,
+        type,
+        duration: 1000
+      })
     }
+
   }
 
 }
