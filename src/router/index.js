@@ -123,6 +123,18 @@ export const asyncRoutes = [
         component: () => import('@/views/antifake/brand/batch'),
         meta: { title: '批次管理', icon: 'antifake-batch' },
         hidden: true
+      },
+      {
+        path: 'code',
+        name: 'code',
+        component: () => import('@/views/antifake/code/index'),
+        meta: { title: '防伪码管理', icon: 'antifake-code' }
+      },
+      {
+        path: 'config',
+        name: 'config',
+        component: () => import('@/views/antifake/config/index'),
+        meta: { title: '提示管理', icon: 'antifake-config' }
       }
     ]
   },

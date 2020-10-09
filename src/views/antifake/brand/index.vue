@@ -28,7 +28,6 @@
         </el-form>
       </div>
     </el-card>
-
     <el-card class="operate-container" shadow="never">
       <i class="el-icon-tickets" />
       <span>数据列表</span>
@@ -69,7 +68,7 @@
           </template>
         </el-table-column>
         <el-table-column label="操作" width="180" align="center">
-          <template slot-scope="scope">
+          <template v-if="scope.row.enabled" slot-scope="scope">
             <el-button
               size="mini"
               type="text"
@@ -133,7 +132,7 @@
   </div>
 </template>
 <script>
-import { fetchList, createFwBrand, deleteFwBrand } from '@/api/fwBrand'
+import { fetchList, createFwBrand, deleteFwBrand, updateStatus } from '@/api/fwBrand'
 const defaultListQuery = {
   pageNum: 1,
   pageSize: 10,
@@ -264,6 +263,27 @@ export default {
           })
           this.getList()
         })
+      })
+    },
+    handleStatusChange(index, row) {
+      this.$confirm('是否要修改该状态?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        updateStatus(row.id, { enabled: row.enabled }).then(response => {
+          this.$message({
+            type: 'success',
+            message: '修改成功!'
+          })
+        })
+        this.$router.go(0)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消修改'
+        })
+        this.getList()
       })
     },
     tips(message, type) {

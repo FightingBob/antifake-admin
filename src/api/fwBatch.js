@@ -39,3 +39,19 @@ export function deleteFwBatch(params) {
     params
   })
 }
+
+export function deleteTxtFile(params) {
+  return request({
+    url: '/fwBatch/deleteFile',
+    method: 'post',
+    params
+  })
+}
+
+export function updateStatus(id, params) {
+  return request({
+    url: '/fwBatch/updateStatus/' + id,
+    method: 'post',
+    params
+  })
+}

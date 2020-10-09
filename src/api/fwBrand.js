@@ -3,7 +3,7 @@ import request from '@/utils/request'
 export function fetchList(params) {
   return request({
     url: '/fwBrand/list',
-    data: params,
+    params,
     method: 'get'
   })
 }
@@ -19,6 +19,14 @@ export function createFwBrand(data) {
 export function deleteFwBrand(params) {
   return request({
     url: '/fwBrand/delete',
+    method: 'post',
+    params
+  })
+}
+
+export function updateStatus(id, params) {
+  return request({
+    url: '/fwBrand/updateStatus/' + id,
     method: 'post',
     params
   })

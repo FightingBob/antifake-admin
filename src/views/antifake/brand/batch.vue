@@ -23,7 +23,7 @@
       <div style="margin-top: 15px">
         <el-form :inline="true" :model="listQuery" size="small" label-width="140px">
           <el-form-item label="输入搜索：">
-            <el-input v-model="listQuery.keyword" class="input-width" placeholder="品牌名称" clearable />
+            <el-input v-model="listQuery.keyword" class="input-width" placeholder="批次" clearable />
           </el-form-item>
         </el-form>
       </div>
@@ -37,7 +37,7 @@
 
     <div class="table-container">
       <el-table
-        ref="adminTable"
+        ref="batchTable"
         v-loading="listLoading"
         :data="list"
         style="width: 100%;"
@@ -77,8 +77,8 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" align="center">
-          <template slot-scope="scope">
+        <el-table-column label="操作" align="center">
+          <template v-if="scope.row.enabled" slot-scope="scope">
             <el-button
               v-if="scope.row.encrptCodeSufUrl != null && scope.row.encrptCodeSufUrl != undefined"
               size="mini"
@@ -94,11 +94,19 @@
             >生成文件
             </el-button>
             <el-button
+              v-if="scope.row.encrptCodeSufUrl != null && scope.row.encrptCodeSufUrl != undefined"
+              size="mini"
+              type="text"
+              @click="handleDeleteFile(scope.$index, scope.row)"
+            >删除文件
+            </el-button>
+            <el-button
               size="mini"
               type="text"
               @click="handleDelete(scope.$index, scope.row)"
             >删除
             </el-button>
+
           </template>
         </el-table-column>
       </el-table>
@@ -132,7 +140,8 @@
   </div>
 </template>
 <script>
-import { fetchList, createFile, createFwBatch, deleteFwBatch } from '@/api/fwBatch'
+import { fetchList, createFile, createFwBatch, deleteFwBatch, updateStatus, deleteTxtFile } from '@/api/fwBatch'
+import { getIp } from '@/utils/IPUtil'
 const defaultListQuery = {
   pageNum: 1,
   pageSize: 10,
@@ -164,6 +173,7 @@ export default {
       dialogVisible: false,
       isEdit: false,
       brandName: null,
+      ipAddress: null,
       preNumber: null,
       fwBatch: Object.assign({}, defaultFwBatch),
       rules: {
@@ -215,9 +225,13 @@ export default {
         const type = 'error'
         this.tips(message, type)
       } else {
-        window.open('http://localhost:8888/fwBatch/export?fwBatchId=' + row.id + '&code=' + row.encrptCodeSufUrl, '_blank')
+        getIp().then(response => {
+          this.ipAddress = response.data
+          window.open('http://' + this.ipAddress + ':8666/fwBatch/export?fwBatchId=' + row.id + '&code=' + row.encrptCodeSufUrl, '_blank')
+        })
       }
     },
+
     tips(message, type) {
       this.$message({
         message,
@@ -258,6 +272,24 @@ export default {
         })
       })
     },
+    handleDeleteFile(index, row) {
+      this.$confirm('是否要删除该批次生成的文件？【不会删除防伪码】', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        const params = {
+          fwBatchId: row.id
+        }
+        deleteTxtFile(params).then(response => {
+          this.$message({
+            type: 'success',
+            message: '删除文件成功!'
+          })
+          this.getList()
+        })
+      })
+    },
     handleDialogConfirm(formName) {
       this.$confirm('是否要确认?', '提示', {
         confirmButtonText: '确定',
@@ -284,6 +316,27 @@ export default {
         const type = 'success'
         this.tips(message, type)
         this.dialogVisible = false
+        this.getList()
+      })
+    },
+    handleStatusChange(index, row) {
+      this.$confirm('是否要修改该状态?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        updateStatus(row.id, { enabled: row.enabled }).then(response => {
+          this.$message({
+            type: 'success',
+            message: '修改成功!'
+          })
+        })
+        this.$router.go(0)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消修改'
+        })
         this.getList()
       })
     }
