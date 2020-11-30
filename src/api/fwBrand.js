@@ -31,3 +31,11 @@ export function updateStatus(id, params) {
     params
   })
 }
+
+export function updateFwBrand(id, data) {
+  return request({
+    url: '/fwBrand/update/' + id,
+    method: 'post',
+    data
+  })
+}

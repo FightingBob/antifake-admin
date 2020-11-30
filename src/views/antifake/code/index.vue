@@ -68,7 +68,7 @@
         border
       >
         <el-table-column label="查询记录【以下都为真实的防伪码，默认识别超过5次失效】" align="center">
-          <el-table-column label="编号" width="100" align="center">
+          <!-- <el-table-column label="编号" width="100" align="center">
             <template slot-scope="scope">{{ scope.row.codeId }}</template>
           </el-table-column>
           <el-table-column label="品牌名称" width="200" align="center">
@@ -76,7 +76,7 @@
           </el-table-column>
           <el-table-column label="批次" width="100" align="center">
             <template slot-scope="scope">{{ scope.row.midNumber }}</template>
-          </el-table-column>
+          </el-table-column> -->
           <el-table-column label="防伪码" align="center">
             <template slot-scope="scope">{{ scope.row.serialNumber }}</template>
           </el-table-column>

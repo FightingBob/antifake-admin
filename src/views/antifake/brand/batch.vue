@@ -220,14 +220,22 @@ export default {
       this.fwBrand = Object.assign({}, defaultFwBatch)
     },
     exportSerialNumber(index, row) {
+      const loading = this.$loading({
+        lock: true,
+        text: 'Loading',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      })
       if (row.encrptCodeSufUrl === null || row.encrptCodeSufUrl === undefined) {
         const message = '请先生成文件，再导出'
+        loading.close()
         const type = 'error'
         this.tips(message, type)
       } else {
         getIp().then(response => {
           this.ipAddress = response.data
           window.open('http://' + this.ipAddress + ':8666/fwBatch/export?fwBatchId=' + row.id + '&code=' + row.encrptCodeSufUrl, '_blank')
+          loading.close()
         })
       }
     },
@@ -240,8 +248,14 @@ export default {
       })
     },
     handelCreate(index, row) {
-      console.log()
+      const loading = this.$loading({
+        lock: true,
+        text: 'Loading',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      })
       if (row.encrptCodeSufUrl !== null && row.encrptCodeSufUrl !== undefined) {
+        loading.close()
         const message = '已生成文件，直接导出即可'
         const type = 'error'
         this.tips(message, type)
@@ -250,6 +264,7 @@ export default {
           fwBatchId: row.id
         }
         createFile(params).then(response => {
+          loading.close()
           this.$router.go(0)
         })
       }
@@ -310,12 +325,19 @@ export default {
       })
     },
     addFwBatch(fwBatch) {
+      const loading = this.$loading({
+        lock: true,
+        text: 'Loading',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      })
       fwBatch.fwBrandId = this.listQuery.brandId
       createFwBatch(fwBatch).then(response => {
         const message = '添加成功'
         const type = 'success'
         this.tips(message, type)
         this.dialogVisible = false
+        loading.close()
         this.getList()
       })
     },

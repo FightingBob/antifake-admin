@@ -48,6 +48,9 @@
         <el-table-column label="名称" align="center">
           <template slot-scope="scope">{{ scope.row.name }}</template>
         </el-table-column>
+        <el-table-column label="名称" align="center">
+          <template slot-scope="scope">{{ scope.row.brandCode }}</template>
+        </el-table-column>
         <el-table-column label="防伪码前缀" align="center">
           <template slot-scope="scope">{{ scope.row.preNumber }}</template>
         </el-table-column>
@@ -74,6 +77,13 @@
               type="text"
               @click="handleBatch(scope.$index, scope.row)"
             >批次管理
+            </el-button>
+            <el-button
+              size="mini"
+              type="text"
+              @click="handleUpdate(scope.$index, scope.row)"
+            >
+              编辑
             </el-button>
             <el-button
               size="mini"
@@ -113,6 +123,9 @@
         <el-form-item label="品牌名称：" prop="name">
           <el-input v-model="fwBrand.name" style="width: 250px" />
         </el-form-item>
+        <el-form-item label="品牌代号：" prop="name">
+          <el-input v-model="fwBrand.brandCode" style="width: 250px" />
+        </el-form-item>
         <el-form-item label="防伪码前缀：" prop="preNumber">
           <el-input v-model.number="fwBrand.preNumber" style="width: 250px" />
         </el-form-item>
@@ -132,7 +145,7 @@
   </div>
 </template>
 <script>
-import { fetchList, createFwBrand, deleteFwBrand, updateStatus } from '@/api/fwBrand'
+import { fetchList, createFwBrand, deleteFwBrand, updateStatus, updateFwBrand } from '@/api/fwBrand'
 const defaultListQuery = {
   pageNum: 1,
   pageSize: 10,
@@ -168,7 +181,9 @@ export default {
           { min: 2, max: 15, message: '长度在2到15个字符之间', trigger: 'blur' }
         ],
         preNumber: [
-          { type: 'number', min: 1, max: 9, message: '请在1-9内进行选择', trigger: ['blur', 'change'] }
+          { required: true, message: '前缀不能为空' },
+          { required: true, message: '请在1-9内进行选择', pattern: /^\d{1}$/ }
+          // { type: 'number', min: 1, max: 9, message: '请在1-9内进行选择', trigger: ['blur'] }
         ]
       }
     }
@@ -207,6 +222,11 @@ export default {
       this.isEdit = false
       this.fwBrand = Object.assign({}, defaultFwBrand)
     },
+    handleUpdate(index, row) {
+      this.dialogVisible = true
+      this.isEdit = true
+      this.fwBrand = Object.assign({}, row)
+    },
     handleBatch(index, row) {
       this.$router.push({
         path: '/antifake/batch',
@@ -225,7 +245,13 @@ export default {
         type: 'warning'
       }).then(() => {
         if (this.isEdit) {
-          console.log('编辑品牌')
+          updateFwBrand(this.fwBrand.id, this.fwBrand).then(response => {
+            const message = '修改成功！'
+            const type = 'success'
+            this.tips(message, type)
+            this.dialogVisible = false
+            this.getList()
+          })
         } else {
           this.$refs[formName].validate((valid) => {
             if (valid) {
