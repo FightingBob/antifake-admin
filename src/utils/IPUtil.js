@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 export function getIp() {
   return request({
-    url: '/fwBatch/ip',
+    url: '/batch/ip',
     method: 'get'
   })
 }

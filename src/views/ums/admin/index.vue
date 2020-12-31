@@ -284,7 +284,7 @@ export default {
         this.total = response.data.total
       })
       exportList(this.listQuery).then(response => {
-        this.excelList = response.data
+        this.excelList = response.data.list
         this.setExcelData()
       })
     },

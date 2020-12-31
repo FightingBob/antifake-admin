@@ -138,6 +138,13 @@ export default {
     // window.removeEventListener('storage', this.afterQRScan)
   },
   methods: {
+    tips(message, type) {
+      this.$message({
+        message,
+        type,
+        duration: 1000
+      })
+    },
     checkCapslock(e) {
       const { key } = e
       this.capsTooltip = key && key.length === 1 && (key >= 'A' && key <= 'Z')
@@ -160,6 +167,7 @@ export default {
             .then(() => {
               this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
               this.loading = false
+              this.tips('登录成功', 'success')
             })
             .catch(() => {
               this.loading = false

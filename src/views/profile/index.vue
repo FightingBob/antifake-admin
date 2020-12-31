@@ -16,10 +16,10 @@
               <el-tab-pane label="密码修改" name="password">
                 <password />
               </el-tab-pane>
-              <el-tab-pane label="更换头像" name="icon">
+              <!-- <el-tab-pane label="更换头像" name="icon">
                 <icon ref="tabIcon" v-model="photo" @callFather="getChild" />
                 <el-button v-if="fileList[0].url" size="small" type="primary" style="margin-top: 10px;" @click="updateIcon">保存<i class="el-icon-s-claim el-icon--right" /></el-button>
-              </el-tab-pane>
+              </el-tab-pane> -->
             </el-tabs>
           </el-card>
         </el-col>

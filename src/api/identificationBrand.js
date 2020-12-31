@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function fetchList(params) {
   return request({
-    url: '/fwBrand/list',
+    url: '/brand/list',
     params,
     method: 'get'
   })
@@ -10,7 +10,7 @@ export function fetchList(params) {
 
 export function createFwBrand(data) {
   return request({
-    url: '/fwBrand/add',
+    url: '/brand/add',
     method: 'post',
     data
   })
@@ -18,7 +18,7 @@ export function createFwBrand(data) {
 
 export function deleteFwBrand(params) {
   return request({
-    url: '/fwBrand/delete',
+    url: '/brand/delete',
     method: 'post',
     params
   })
@@ -26,7 +26,7 @@ export function deleteFwBrand(params) {
 
 export function updateStatus(id, params) {
   return request({
-    url: '/fwBrand/updateStatus/' + id,
+    url: '/brand/updateStatus/' + id,
     method: 'post',
     params
   })
@@ -34,7 +34,7 @@ export function updateStatus(id, params) {
 
 export function updateFwBrand(id, data) {
   return request({
-    url: '/fwBrand/update/' + id,
+    url: '/brand/update/' + id,
     method: 'post',
     data
   })

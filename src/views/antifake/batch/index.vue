@@ -22,8 +22,18 @@
       </div>
       <div style="margin-top: 15px">
         <el-form :inline="true" :model="listQuery" size="small" label-width="140px">
-          <el-form-item label="输入搜索：">
+          <!-- <el-form-item label="输入搜索：">
             <el-input v-model="listQuery.keyword" class="input-width" placeholder="批次" clearable />
+          </el-form-item> -->
+          <el-form-item label="品牌分类：">
+            <el-select v-model="listQuery.keyword" placeholder="全部" clearable class="input-width">
+              <el-option
+                v-for="item in brandList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.preNumber"
+              />
+            </el-select>
           </el-form-item>
         </el-form>
       </div>
@@ -46,41 +56,32 @@
         <el-table-column label="编号" width="100" align="center">
           <template slot-scope="scope">{{ scope.row.id }}</template>
         </el-table-column>
-        <el-table-column label="批次" width="100" align="center">
-          <template slot-scope="scope">{{ scope.row.midNumber }}</template>
-        </el-table-column>
         <el-table-column label="品牌名称" align="center">
-          <template>{{ brandName }}</template>
+          <template slot-scope="scope">{{ scope.row.firstNumber | formatBrandName(brandList) }}</template>
         </el-table-column>
         <el-table-column label="需求量" width="100" align="center">
           <template slot-scope="scope">{{ scope.row.demand }} 个</template>
         </el-table-column>
-        <el-table-column label="有效时间" width="100" align="center">
-          <template slot-scope="scope">{{ scope.row.expirationTime }} 年</template>
-        </el-table-column>
         <el-table-column label="防伪码前缀" align="center">
-          <template>{{ preNumber }}</template>
+          <template slot-scope="scope">{{ scope.row.preThreeNumber }}</template>
         </el-table-column>
         <el-table-column label="添加时间" width="160" align="center">
-          <template slot-scope="scope">{{ scope.row.createTime | formatDateTime }}</template>
-        </el-table-column>
-        <el-table-column label="修改时间" width="160" align="center">
           <template slot-scope="scope">{{ scope.row.createTime | formatDateTime }}</template>
         </el-table-column>
         <el-table-column label="是否启用" width="140" align="center">
           <template slot-scope="scope">
             <el-switch
-              v-model="scope.row.enabled"
-              :active-value="true"
-              :inactive-value="false"
+              v-model="scope.row.status"
+              :active-value="1"
+              :inactive-value="0"
               @change="handleStatusChange(scope.$index, scope.row)"
             />
           </template>
         </el-table-column>
         <el-table-column label="操作" align="center">
-          <template v-if="scope.row.enabled" slot-scope="scope">
+          <template slot-scope="scope">
             <el-button
-              v-if="scope.row.encrptCodeSufUrl != null && scope.row.encrptCodeSufUrl != undefined"
+              v-if="scope.row.encryptCodeSufUrl != null && scope.row.encryptCodeSufUrl != undefined"
               size="mini"
               type="text"
               @click="exportSerialNumber(scope.$index, scope.row)"
@@ -94,7 +95,7 @@
             >生成文件
             </el-button>
             <el-button
-              v-if="scope.row.encrptCodeSufUrl != null && scope.row.encrptCodeSufUrl != undefined"
+              v-if="scope.row.encryptCodeSufUrl != null && scope.row.encryptCodeSufUrl != undefined"
               size="mini"
               type="text"
               @click="handleDeleteFile(scope.$index, scope.row)"
@@ -112,6 +113,19 @@
       </el-table>
     </div>
 
+    <div class="pagination-container">
+      <el-pagination
+        background
+        layout="total, sizes,prev, pager, next,jumper"
+        :current-page.sync="listQuery.pageNum"
+        :page-size="listQuery.pageSize"
+        :page-sizes="[10,15,20]"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
+
     <el-dialog
       :title="isEdit?'编辑批次':'添加批次'"
       :visible.sync="dialogVisible"
@@ -119,16 +133,23 @@
     >
       <el-form
         ref="batchForm"
-        :model="fwBatch"
+        :model="batchParam"
         label-width="150px"
         size="small"
         :rules="rules"
       >
         <el-form-item label="需求量：" prop="demand">
-          <el-input v-model.number="fwBatch.demand" style="width: 250px" />
+          <el-input v-model.number="batchParam.demand" style="width: 250px" />
         </el-form-item>
-        <el-form-item label="防伪码总长度：" prop="length">
-          <el-input v-model.number="fwBatch.length" style="width: 250px" />
+        <el-form-item label="防伪品牌：" prop="firstNumber">
+          <el-select v-model="batchParam.firstNumber" placeholder="请选择品牌:" clearable class="input-width">
+            <el-option
+              v-for="item in brandList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.preNumber"
+            />
+          </el-select>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -140,7 +161,8 @@
   </div>
 </template>
 <script>
-import { fetchList, createFile, createFwBatch, deleteFwBatch, updateStatus, deleteTxtFile } from '@/api/fwBatch'
+import { batchList, createFile, createFwBatch, deleteFwBatch, updateStatus, deleteTxtFile } from '@/api/fwBatch'
+import { fetchList } from '@/api/identificationBrand'
 import { getIp } from '@/utils/IPUtil'
 const defaultListQuery = {
   pageNum: 1,
@@ -148,11 +170,9 @@ const defaultListQuery = {
   keyword: null,
   brandId: null
 }
-const defaultFwBatch = {
-  id: null,
-  fwBrandId: null,
-  demand: null,
-  length: null
+const defaultBatchParam = {
+  firstNumber: null,
+  demand: null
 }
 export default {
   name: 'Batch',
@@ -162,6 +182,18 @@ export default {
         return 'N/A'
       }
       return time
+    },
+    formatBrandName(firstNumber, brandList) {
+      let brandName = ''
+      if (brandList == null) {
+        return '-'
+      }
+      brandList.forEach((item) => {
+        if (item.preNumber == firstNumber) {
+          brandName = item.name
+        }
+      })
+      return brandName
     }
   },
   data() {
@@ -175,24 +207,42 @@ export default {
       brandName: null,
       ipAddress: null,
       preNumber: null,
-      fwBatch: Object.assign({}, defaultFwBatch),
+      batchParam: Object.assign({}, defaultBatchParam),
       rules: {
         demand: [
-          { type: 'number', min: 1, trigger: ['blur', 'change'] }
+          { required: true, message: '数量不能为空' },
+          { type: 'number', min: 1, trigger: ['blur', 'change'], message: '数量不能为空' }
         ],
-        preNumber: [
-          { type: 'number', max: 2, trigger: ['blur', 'change'] }
+        firstNumber: [
+          { required: true, message: '防伪品牌不能为空' }
+          // { type: 'number', min: 1, max: 9, message: '请在1-9内进行选择', trigger: ['blur'] }
         ]
-      }
+      },
+      brandList: null
     }
   },
   created() {
     this.getList()
+    this.getBrandList()
   },
   mounted() {
     this.getParams()
   },
   methods: {
+    handleSizeChange(val) {
+      this.listQuery.pageNum = 1
+      this.listQuery.pageSize = val
+      this.getList()
+    },
+    handleCurrentChange(val) {
+      this.listQuery.pageNum = val
+      this.getList()
+    },
+    getBrandList() {
+      fetchList().then(response => {
+        this.brandList = response.data.list
+      })
+    },
     getParams() {
       this.listQuery.brandId = this.$route.query.brandId
       this.brandName = this.$route.query.brandName
@@ -208,7 +258,7 @@ export default {
     },
     getList() {
       this.listLoading = true
-      fetchList(this.listQuery).then(response => {
+      batchList(this.listQuery).then(response => {
         this.listLoading = false
         this.list = response.data.list
         this.total = response.data.total
@@ -217,7 +267,7 @@ export default {
     handleAdd() {
       this.dialogVisible = true
       this.isEdit = false
-      this.fwBrand = Object.assign({}, defaultFwBatch)
+      this.batchParam = Object.assign({}, defaultBatchParam)
     },
     exportSerialNumber(index, row) {
       const loading = this.$loading({
@@ -226,7 +276,7 @@ export default {
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       })
-      if (row.encrptCodeSufUrl === null || row.encrptCodeSufUrl === undefined) {
+      if (row.encryptCodeSufUrl === null || row.encryptCodeSufUrl === undefined) {
         const message = '请先生成文件，再导出'
         loading.close()
         const type = 'error'
@@ -234,7 +284,7 @@ export default {
       } else {
         getIp().then(response => {
           this.ipAddress = response.data
-          window.open('http://' + this.ipAddress + ':8666/fwBatch/export?fwBatchId=' + row.id + '&code=' + row.encrptCodeSufUrl, '_blank')
+          window.open('http://' + this.ipAddress + ':8666/batch/export?batchId=' + row.id + '&code=' + row.encryptCodeSufUrl, '_blank')
           loading.close()
         })
       }
@@ -254,14 +304,14 @@ export default {
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       })
-      if (row.encrptCodeSufUrl !== null && row.encrptCodeSufUrl !== undefined) {
+      if (row.encryptCodeSufUrl !== null && row.encryptCodeSufUrl !== undefined) {
         loading.close()
         const message = '已生成文件，直接导出即可'
         const type = 'error'
         this.tips(message, type)
       } else {
         const params = {
-          fwBatchId: row.id
+          batchId: row.id
         }
         createFile(params).then(response => {
           loading.close()
@@ -276,7 +326,7 @@ export default {
         type: 'warning'
       }).then(() => {
         const params = {
-          fwBatchId: row.id
+          batchId: row.id
         }
         deleteFwBatch(params).then(response => {
           this.$message({
@@ -294,7 +344,7 @@ export default {
         type: 'warning'
       }).then(() => {
         const params = {
-          fwBatchId: row.id
+          batchId: row.id
         }
         deleteTxtFile(params).then(response => {
           this.$message({
@@ -316,7 +366,7 @@ export default {
         } else {
           this.$refs[formName].validate((valid) => {
             if (valid) {
-              this.addFwBatch(this.fwBatch)
+              this.addFwBatch(this.batchParam)
             } else {
               this.$message.error('请填写正确再提交')
             }
@@ -324,15 +374,14 @@ export default {
         }
       })
     },
-    addFwBatch(fwBatch) {
+    addFwBatch(batchParam) {
       const loading = this.$loading({
         lock: true,
         text: 'Loading',
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       })
-      fwBatch.fwBrandId = this.listQuery.brandId
-      createFwBatch(fwBatch).then(response => {
+      createFwBatch(batchParam).then(response => {
         const message = '添加成功'
         const type = 'success'
         this.tips(message, type)
@@ -347,7 +396,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        updateStatus(row.id, { enabled: row.enabled }).then(response => {
+        updateStatus(row.id, { status: row.status }).then(response => {
           this.$message({
             type: 'success',
             message: '修改成功!'

@@ -1,8 +1,8 @@
 import request from '@/utils/request'
 
-export function fetchList(params) {
+export function batchList(params) {
   return request({
-    url: '/fwBatch/list',
+    url: '/batch/list',
     method: 'get',
     params
   })
@@ -10,7 +10,7 @@ export function fetchList(params) {
 
 export function exportBatch() {
   return request({
-    url: '/fwBatch/org',
+    url: '/batch/org',
     method: 'get',
     responseType: 'blob'
   })
@@ -18,7 +18,7 @@ export function exportBatch() {
 
 export function createFile(params) {
   return request({
-    url: '/fwBatch/createFile',
+    url: '/batch/createFile',
     method: 'post',
     params
   })
@@ -26,7 +26,7 @@ export function createFile(params) {
 
 export function createFwBatch(data) {
   return request({
-    url: '/fwBatch/add',
+    url: '/batch/add',
     method: 'post',
     data
   })
@@ -34,7 +34,7 @@ export function createFwBatch(data) {
 
 export function deleteFwBatch(params) {
   return request({
-    url: '/fwBatch/delete',
+    url: '/batch/delete',
     method: 'post',
     params
   })
@@ -42,7 +42,7 @@ export function deleteFwBatch(params) {
 
 export function deleteTxtFile(params) {
   return request({
-    url: '/fwBatch/deleteFile',
+    url: '/batch/deleteFile',
     method: 'post',
     params
   })
@@ -50,7 +50,7 @@ export function deleteTxtFile(params) {
 
 export function updateStatus(id, params) {
   return request({
-    url: '/fwBatch/updateStatus/' + id,
+    url: '/batch/updateStatus/' + id,
     method: 'post',
     params
   })

@@ -120,7 +120,7 @@ export const asyncRoutes = [
       {
         path: 'batch',
         name: 'batch',
-        component: () => import('@/views/antifake/brand/batch'),
+        component: () => import('@/views/antifake/batch/index'),
         meta: { title: '批次管理', icon: 'antifake-batch' },
         hidden: true
       },

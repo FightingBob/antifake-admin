@@ -60,18 +60,8 @@
         <el-table-column label="修改时间" width="160" align="center">
           <template slot-scope="scope">{{ scope.row.createTime | formatDateTime }}</template>
         </el-table-column>
-        <el-table-column label="是否启用" width="140" align="center">
-          <template slot-scope="scope">
-            <el-switch
-              v-model="scope.row.enabled"
-              :active-value="true"
-              :inactive-value="false"
-              @change="handleStatusChange(scope.$index, scope.row)"
-            />
-          </template>
-        </el-table-column>
         <el-table-column label="操作" width="180" align="center">
-          <template v-if="scope.row.enabled" slot-scope="scope">
+          <template slot-scope="scope">
             <el-button
               size="mini"
               type="text"
@@ -123,17 +113,11 @@
         <el-form-item label="品牌名称：" prop="name">
           <el-input v-model="fwBrand.name" style="width: 250px" />
         </el-form-item>
-        <el-form-item label="品牌代号：" prop="name">
+        <el-form-item label="品牌代号：" prop="brandCode">
           <el-input v-model="fwBrand.brandCode" style="width: 250px" />
         </el-form-item>
         <el-form-item label="防伪码前缀：" prop="preNumber">
           <el-input v-model.number="fwBrand.preNumber" style="width: 250px" />
-        </el-form-item>
-        <el-form-item label="是否启用：">
-          <el-radio-group v-model="fwBrand.enabled">
-            <el-radio :label="true">是</el-radio>
-            <el-radio :label="false">否</el-radio>
-          </el-radio-group>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -145,7 +129,7 @@
   </div>
 </template>
 <script>
-import { fetchList, createFwBrand, deleteFwBrand, updateStatus, updateFwBrand } from '@/api/fwBrand'
+import { fetchList, createFwBrand, deleteFwBrand, updateStatus, updateFwBrand } from '@/api/identificationBrand'
 const defaultListQuery = {
   pageNum: 1,
   pageSize: 10,
@@ -155,7 +139,7 @@ const defaultFwBrand = {
   id: null,
   name: null,
   preNumber: null,
-  enabled: true
+  brandCode: null
 }
 export default {
   name: 'Brand',
@@ -183,6 +167,16 @@ export default {
         preNumber: [
           { required: true, message: '前缀不能为空' },
           { required: true, message: '请在1-9内进行选择', pattern: /^\d{1}$/ }
+          // { type: 'number', min: 1, max: 9, message: '请在1-9内进行选择', trigger: ['blur'] }
+        ],
+        brandCode: [
+          { required: true, message: '品牌代号不能为空' },
+          {
+            pattern: /^[0-9a-zA-z]{2,15}$/,
+            message: '品牌代号格式不对,请输入2-15数字字母混合字符',
+            trigger: 'blur'
+          }
+          // { min: 2, max: 15, message: '长度在2到15个字符之间', trigger: 'blur' }
           // { type: 'number', min: 1, max: 9, message: '请在1-9内进行选择', trigger: ['blur'] }
         ]
       }
@@ -280,7 +274,7 @@ export default {
         type: 'warning'
       }).then(() => {
         const params = {
-          fwBrandId: row.id
+          brandId: row.id
         }
         deleteFwBrand(params).then(response => {
           this.$message({
