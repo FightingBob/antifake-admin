@@ -315,6 +315,9 @@ export default {
         }
         createFile(params).then(response => {
           loading.close()
+          const message = '正在生成文件，请稍后'
+          const type = 'success'
+          this.tips(message, type)
           this.$router.go(0)
         })
       }
@@ -382,7 +385,7 @@ export default {
         background: 'rgba(0, 0, 0, 0.7)'
       })
       createFwBatch(batchParam).then(response => {
-        const message = '添加成功'
+        const message = '后台正在生成防伪码，请稍候！'
         const type = 'success'
         this.tips(message, type)
         this.dialogVisible = false

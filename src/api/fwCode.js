@@ -2,32 +2,24 @@ import request from '@/utils/request'
 
 export function queryCode(params) {
   return request({
-    url: '/fwCode/query',
+    url: '/code/query',
     method: 'get',
     params
   })
 }
 
-export function list() {
+export function clearCode(data) {
   return request({
-    url: '/fwCode/list',
-    method: 'get'
-
+    url: '/code/clear',
+    method: 'post',
+    data
   })
 }
 
-export function deleteCode(params) {
+export function addNewCode(data) {
   return request({
-    url: '/fwCode/delete',
+    url: '/code/add',
     method: 'post',
-    params
-  })
-}
-
-export function addNewCode(params) {
-  return request({
-    url: '/fwCode/add',
-    method: 'post',
-    params
+    data
   })
 }
