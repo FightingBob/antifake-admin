@@ -223,7 +223,9 @@ export default {
   },
   watch: {
     ipAddress() {
-      window.open(this.ipAddress, '_blank')
+      var tempwindow = window.open('_blank')
+      tempwindow.location = this.ipAddress
+      // window.open(this.ipAddress, '_blank')
     }
   },
   created() {
@@ -288,7 +290,10 @@ export default {
         this.tips(message, type)
       } else {
         getIp().then(response => {
-          this.ipAddress = 'http://' + response.data + ':8666/batch/export?batchId=' + row.id + '&code=' + row.encryptCodeSufUrl
+          console.log(window.location.host)
+          // this.ipAddress = 'http://' + response.data + ':8666/batch/export?batchId=' + row.id + '&code=' + row.encryptCodeSufUrl
+          // this.ipAddress = 'https://laikou-cn.wesheda.com/' + 'prod-api/batch/export?batchId=' + row.id + '&code=' + row.encryptCodeSufUrl
+          this.ipAddress = 'https://' + window.location.host + '/prod-api/batch/export?batchId=' + row.id + '&code=' + row.encryptCodeSufUrl
           // window.open('http://' + this.ipAddress + ':8666/batch/export?batchId=' + row.id + '&code=' + row.encryptCodeSufUrl, '_blank')
           loading.close()
         })
